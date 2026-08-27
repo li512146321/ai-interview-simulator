@@ -1,0 +1,15 @@
+node_modules/ 
+.env 
+.env.local 
+.vercel/ 
+data/ 
+dist/ 
+*.db 
+*.db-journal 
+*.db-wal 
+*.db-shm 
+.DS_Store 
+auto-imports.d.ts 
+components.d.ts 
+1.txt 
+read-me.txt 

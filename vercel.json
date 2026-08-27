@@ -1,0 +1,21 @@
+{
+    "functions": {
+        "api/ai.js": {
+            "memory": 512,
+            "maxDuration": 30
+        }
+    },
+    "rewrites": [
+        {
+            "source": "/api/(.*)",
+            "destination": "/api/$1"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ],
+    "devCommand": "vite --port 3000",
+    "buildCommand": "vite build",
+    "outputDirectory": "dist"
+}
