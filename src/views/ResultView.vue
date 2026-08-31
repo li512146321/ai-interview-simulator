@@ -244,11 +244,19 @@
             <div class="plan-price">¥{{ pricing.yearly?.price || 199 }}<span class="plan-period">/{{ pricing.yearly?.days || 365 }}天</span></div>
           </div>
         </div>
+        <div v-if="qrCodeUrl" class="qr-section">
+          <img :src="qrCodeUrl" alt="微信二维码" class="qr-image" />
+          <p class="qr-hint">微信扫码添加，备注注册邮箱</p>
+        </div>
         <div class="paywall-contact">
-          <p class="contact-text">📱 微信：{{ pricing.adminContact?.wechat || '请联系客服' }}</p>
-          <NButton size="small" text class="copy-btn" @click="copyWechat">
-            复制
-          </NButton>
+          <div class="contact-row">
+            <span class="contact-text">📱 微信：{{ pricing.adminContact?.wechat || '请联系客服' }}</span>
+            <NButton size="small" text class="copy-btn" @click="copyWechat">复制</NButton>
+          </div>
+          <div class="contact-row" v-if="pricing.adminContact?.phone">
+            <span class="contact-text">📞 电话：{{ pricing.adminContact.phone }}</span>
+            <NButton size="small" text class="copy-btn" @click="copyPhone">复制</NButton>
+          </div>
           <p class="contact-hint">💡 备注注册邮箱，5分钟开通</p>
         </div>
         <NButton class="paywall-close-btn" text @click="paywallVisible = false">
@@ -287,8 +295,9 @@ const reportData = reactive({
 
 const expandedQuestions = ref({})
 const paywallVisible = ref(false)
+const qrCodeUrl = ref('')
 const isLoading = ref(true)
-const pricing = ref({ monthly: { price: 39, days: 30 }, yearly: { price: 199, days: 365 }, adminContact: { wechat: '' } })
+const pricing = ref({ monthly: { price: 39, days: 30 }, yearly: { price: 199, days: 365 }, adminContact: { wechat: '', phone: '' } })
 
 const isPaid = computed(() => userStore.canAccessFullReport())
 
@@ -395,7 +404,17 @@ function copyWechat() {
   }).catch(() => {})
 }
 
+function copyPhone() {
+  const phone = pricing.value.adminContact?.phone
+  if (!phone) return
+  navigator.clipboard.writeText(phone).then(() => {
+    message.success('手机号已复制')
+  }).catch(() => {})
+}
+
 onMounted(async () => {
+  qrCodeUrl.value = '/wechat-qr.png'
+
   const sessionId = route.params.sessionId
   if (!sessionId) {
     message.error('缺少会话ID')
@@ -1056,6 +1075,32 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   gap: 8px;
+}
+
+.qr-section {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.qr-image {
+  width: 180px;
+  height: 180px;
+  border: 1px solid #eee;
+  border-radius: 12px;
+}
+
+.qr-hint {
+  font-size: 13px;
+  color: #999;
+  margin-top: 8px;
+}
+
+.contact-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  width: 100%;
 }
 
 .contact-text {
