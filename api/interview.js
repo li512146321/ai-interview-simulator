@@ -179,7 +179,8 @@ async function callAI(chatMessages, temperature, maxTokens) {
 function getFallbackQuestion(position, questionIndex, fallbackQuestions) {
   if (!fallbackQuestions || fallbackQuestions.length === 0) return null
   const idx = questionIndex % fallbackQuestions.length
-  return fallbackQuestions[idx].question
+  const item = fallbackQuestions[idx]
+  return item?.question || '请继续回答，你刚才提到的内容很有意思，能再详细展开说说吗？'
 }
 
 export default async function handler(req, res) {
@@ -433,10 +434,10 @@ async function handleMessage(req, res, user) {
   } else if (isClosing) {
     reply = '好的，今天的面试就到这里。感谢你的参与，我会整理一份详细的面试报告，请稍等...'
   } else {
-    const fallbackQuestions = getFallbackQuestions(session.position || 'general')
+    const fallbackQuestions = await getFallbackQuestions(session.position || 'general')
     const allFallback = fallbackQuestions.length > 0
       ? fallbackQuestions
-      : getFallbackQuestions('general')
+      : await getFallbackQuestions('general')
     const fallback = getFallbackQuestion(session.position, currentQuestion - 1, allFallback)
     reply = fallback || '请继续回答，你刚才提到的内容很有意思，能再详细展开说说吗？'
   }
