@@ -121,14 +121,53 @@ const server = http.createServer(async (req, res) => {
         const { default: positionsHandler } = await import('./api/positions.js')
         await positionsHandler(req, createFakeRes(res))
     } else {
-        res.writeHead(404)
-        res.end('Not Found')
+        const distDir = path.join(__dirname, 'dist')
+        let filePath = path.join(distDir, url === '/' ? 'index.html' : url)
+
+        const extToMime = {
+            '.html': 'text/html',
+            '.js': 'application/javascript',
+            '.css': 'text/css',
+            '.json': 'application/json',
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.gif': 'image/gif',
+            '.svg': 'image/svg+xml',
+            '.ico': 'image/x-icon',
+            '.woff': 'font/woff',
+            '.woff2': 'font/woff2',
+            '.ttf': 'font/ttf',
+            '.eot': 'application/vnd.ms-fontobject',
+            '.txt': 'text/plain'
+        }
+
+        const ext = path.extname(filePath)
+        const mime = extToMime[ext] || 'application/octet-stream'
+
+        try {
+            const content = fs.readFileSync(filePath)
+            res.writeHead(200, { 'Content-Type': mime })
+            res.end(content)
+        } catch (e) {
+            filePath = path.join(distDir, 'index.html')
+            try {
+                const content = fs.readFileSync(filePath)
+                res.writeHead(200, { 'Content-Type': 'text/html' })
+                res.end(content)
+            } catch (e2) {
+                res.writeHead(404)
+                res.end('Not Found')
+            }
+        }
     }
 })
 
+const PORT = process.env.PORT || 3001
+
 initDb().then(() => {
-    server.listen(3001, () => {
-        console.log('API Server running on http://localhost:3001')
+    server.listen(PORT, () => {
+        console.log(`API Server running on http://localhost:${PORT}`)
         console.log('Routes: /api/ai | /api/speech | /api/tts | /api/interview | /api/auth | /api/verification | /api/admin | /api/positions | /api/events | /api/quota | /api/pricing')
     })
 }).catch(err => {
